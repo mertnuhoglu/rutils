@@ -49,6 +49,8 @@ is_empty = function(x) {
 #' @export
 not_empty <- function(x) !(is_empty(x))
 
+# note that this has some weird bugs
+# check debug_bugs.Rmd
 #' @export
 is_na = function(x) is.na(x) | all(ifelse( class(x) == "character", x == "NA", FALSE))
 #' @export
@@ -184,3 +186,105 @@ duplicated_rows = function(df, column) {
 		#filter( n() > 1 )
 }
 
+# lapply rows of a dataframe
+#' @export
+applyr = purrr::partial(apply, MARGIN = 1)
+#' @export
+applyc = purrr::partial(apply, MARGIN = 2)
+
+#' @export
+import2 = function( path, table = "", with_invalid = F, ...) {
+  remove_all_na_rows = function(df) dplyr::filter( df, !applyr(is.na(df), all) )
+  remove_all_na_columns = function(df) df[ applyc(!is.na(df), any) ]
+  remove_blank_column_headings = function(df) {
+    df[ !unlist(lapply(names(df), is.blank)) ]
+     #unlist(lapply(names(df), !is.blank)) 
+    #lapply(names(df), is.blank)
+  }
+  remove_all_newlines_inside_cells = function(df) {
+    purrr::map(df, ~ stringr::str_replace_all(.x, '\\r|\\n', '') ) %>%
+      tibble::as_tibble()
+  }
+  escape_all_single_quotes_inside_cells = function(df) {
+    purrr::map(df, ~ stringr::str_replace_all(.x, "'", "''") ) %>%
+      tibble::as_tibble()
+  }
+
+  str_starts_with <- function(vars, match, ignore.case = TRUE) {
+    if (ignore.case) match <- tolower(match)
+    n <- nchar(match)
+
+    if (ignore.case) vars <- tolower(vars)
+    substr(vars, 1, n) == match
+  }
+
+  str_ends_with <- function(vars, match, ignore.case = TRUE) {
+    if (ignore.case) match <- tolower(match)
+    n <- nchar(match)
+
+    if (ignore.case) vars <- tolower(vars)
+    length <- nchar(vars)
+
+    substr(vars, pmax(1, length - n + 1), length) == match
+  }
+
+  make_numeric = function(df) {
+    cols = names(df)
+    cols_to_select = str_ends_with(cols, '_id') | cols == 'id'
+    cols = cols[cols_to_select] 
+    for (i in seq_along(cols)) {
+      df[[ cols[i] ]] = df[[ cols[i] ]] %>% as.numeric
+    }
+    return(df)
+  }
+
+  if (is.blank(table)) {
+    df = rio::import(path, ...) 
+  } else {
+    df = readxl::read_excel(path, table, ...) 
+  }
+	# exceptional case: all columns na
+	is_any_column_exists = applyc(!is.na(df), any) %>% any
+	if(!is_any_column_exists) return(remove_all_na_rows(df))
+
+	# normal case
+	df = df %>%
+		remove_all_na_columns %>% 
+		remove_blank_column_headings %>%
+		remove_all_na_rows %>%
+		remove_all_newlines_inside_cells %>%
+		escape_all_single_quotes_inside_cells %>%
+		make_numeric
+	if (none(names(df) == "invalid"))
+		return(df)
+	if ( with_invalid ) {
+		return(df)
+	}
+	else {
+		return( 
+			df %>%
+				dplyr::filter( is_na(invalid) | invalid == 0 ) %>%
+				dplyr::select( -invalid )
+		) 
+	}
+}
+
+#' copied from rapportools
+#' @export
+tocamel = function (x, delim = "[^[:alnum:]]", upper = FALSE, sep = "", ...) {
+    stopifnot(is.character(x))
+    stopifnot(is.string(delim))
+    s <- strsplit(x, delim, ...)
+    sapply(s, function(y) {
+        if (any(is.na(y))) {
+            y
+        }
+        else {
+            first <- substring(y, 1, 1)
+            if (isTRUE(upper))
+                first <- toupper(first)
+            else first[-1] <- toupper(first[-1])
+            paste(first, substring(y, 2), sep = "", collapse = sep)
+        }
+    })
+}
