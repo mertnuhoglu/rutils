@@ -5,9 +5,10 @@ path_file = function(dir = ".", filename = "") {
 	sprintf("%s/%s.tsv", dir_path, filename)
 }
 
+#' @export
 path_assert = function(title = "", dir = ".", filename = "") {
   dir_path = sprintf("%s/data/verify", dir)
-  dir.create(path_assert = dir_path, recursive = T)
+  dir.create(dir_path, recursive = T)
 	sprintf("%s/assert_%s_%s.tsv", dir_path, title, filename)
 }
 
@@ -16,9 +17,9 @@ assert_empty = function(df, dir = ".", filename = "", validate = F) {
 	rio::export(df, path_assert("empty", dir, filename))
 
 	if (validate) {
-    assertthat::validate_that( is_empty(df) )
+    assertthat::validate_that( rutils::is_empty(df) )
 	} else {
-    assertthat::assert_that( is_empty(df) )
+    assertthat::assert_that( rutils::is_empty(df) )
 	}
 	#> data/verify/assert_empty.tsv
 }
@@ -28,7 +29,7 @@ assert_rows_unique = function(df, cols, dir = ".", filename = "" ) {
 	dup_rows = duplicated_rows_(df, cols)
 
 	rio::export( dup_rows, path_assert("rows_unique", dir, filename) )
-	assertthat::assert_that( is_empty(dup_rows) )
+	assertthat::assert_that( rutils::is_empty(dup_rows) )
 	#> ../view/verify/assert_rows_are_unique.tsv
 }
 
@@ -41,9 +42,9 @@ assert_inclusion = function(subset, superset, fk_subset, fk_superset = fk_subset
 
 	rio::export(no_subset__missing_instances, path_assert("inclusion", dir, filename))
 	if (validate) {
-    assertthat::validate_that( is_empty(no_subset__missing_instances) )
+    assertthat::validate_that( rutils::is_empty(no_subset__missing_instances) )
 	} else {
-    assertthat::assert_that( is_empty(no_subset__missing_instances) )
+    assertthat::assert_that( rutils::is_empty(no_subset__missing_instances) )
 	}
 	#> ../view/verify/assert_inclusion.tsv
 }
@@ -56,9 +57,9 @@ assert_all_have_attribute = function( df, columns, dir = ".", filename = "", val
 
 	rio::export( instances_with_no_attribute_value, path_assert("all_have_attribute", dir, filename) )
 	if (validate) {
-    assertthat::validate_that( is_empty(instances_with_no_attribute_value) )
+    assertthat::validate_that( rutils::is_empty(instances_with_no_attribute_value) )
 	} else {
-    assertthat::assert_that( is_empty(instances_with_no_attribute_value) )
+    assertthat::assert_that( rutils::is_empty(instances_with_no_attribute_value) )
 	}
 	#> ../view/verify/assert_all_have_attribute.tsv
 }
@@ -70,9 +71,9 @@ assert_non_na = function( df, columns, dir = ".", filename = "", validate = F ) 
 
 	rio::export( instances_with_no_attribute_value, path_assert("non_na", dir, filename) )
 	if (validate) {
-    assertthat::validate_that( is_empty(instances_with_no_attribute_value) )
+    assertthat::validate_that( rutils::is_empty(instances_with_no_attribute_value) )
 	} else {
-    assertthat::assert_that( is_empty(instances_with_no_attribute_value) )
+    assertthat::assert_that( rutils::is_empty(instances_with_no_attribute_value) )
 	}
 	#> ../view/verify/assert_all_have_attribute.tsv
 }
@@ -83,8 +84,9 @@ assert_no_intersection = function(df1, df2, fk1, fk2 = fk1, dir = ".", filename 
 	no_intersection__common_instances = df1 %>%
 		dplyr::inner_join( df2, by = setNames(fk2, fk1) )
 
-	rio::export(no_intersection__common_instances, path_assert("no_intersection", dir, filename))
-	assertthat::assert_that( is_empty(no_intersection__common_instances) )
+  assert_file = rutils::path_assert("no_intersection", dir, filename)
+	rio::export(no_intersection__common_instances, assert_file)
+	assertthat::assert_that( rutils::is_empty(no_intersection__common_instances), msg = assert_file)
 	#> ../view/verify/assert_no_intersection.tsv
 }
 

@@ -55,6 +55,7 @@ not_empty <- function(x) !(is_empty(x))
 is_na = function(x) is.na(x) | all(ifelse( class(x) == "character", x == "NA", FALSE))
 #' @export
 not.na <- function(x) !(is.na(x))
+not_na = not.na
 
 #' @export
 count_isna = function(x) { sum(is.na(x)) }
@@ -287,4 +288,43 @@ tocamel = function (x, delim = "[^[:alnum:]]", upper = FALSE, sep = "", ...) {
             paste(first, substring(y, 2), sep = "", collapse = sep)
         }
     })
+}
+
+#' @export
+make_package = function() {
+  devtools::document()
+  devtools::build_vignettes()
+  devtools::build()
+  devtools::install()
+}
+
+#' @export
+toUnderscore <- function(x) {
+	x %>%		
+		stringr::str_replace_all("([A-Za-z])([A-Z])([a-z])", "\\1_\\2\\3" ) %>%
+		stringr::str_replace_all("[. ]", "_") %>%
+		stringr::str_replace_all("([a-z])([A-Z])", "\\1_\\2") %>%
+		tolower()
+}
+
+#' @export
+underscore2camel <- function(x) {
+	gsub("_(.)", "\\U\\1", x, perl = TRUE)
+}
+
+#' @export
+select_columns = function(df, columns) {
+	select_(df, .dots = columns)
+}
+
+#' @export
+sprintf_path = function(text, data_model_dir = env_data_model_dir(), ...) {
+  file_path = sprintf(text, data_model_dir, ...)
+  dir.create(dirname(file_path), recursive = T)
+  return(file_path)
+}
+
+lnapply = function(X, FUN, ...) {
+  lapply(names(X), FUN, X, ...) %>%
+    setNames(names(X))
 }
