@@ -1,11 +1,16 @@
 `%>%` <- magrittr::`%>%`
 
+#' @export
+file_copy <- function(from, to, overwrite = T, ...) {
+  dir.create(path = dirname(to), recursive = T)
+  file.copy(from, to, overwrite = overwrite, ...)
+}
 
 #' @export
 is.blank <- function(x, false.triggers=FALSE){
     if(is.function(x)) return(FALSE) # Some of the tests below trigger
                                      # warnings when used on functions
-	 if (is.list(x)) x = unlist(x)
+   if (is.list(x)) x <- unlist(x)
     return(
         is.null(x) ||                # Actually this line is unnecessary since
         length(x) == 0 ||            # length(NULL) = 0, but I like to be clear
@@ -16,7 +21,7 @@ is.blank <- function(x, false.triggers=FALSE){
 }
 
 #' @export
-sys_getenv = function(x = NULL, default = "../../../data/jtn") {
+sys_getenv <- function(x = NULL, default = "../../../data/jtn") {
   if (is.blank(Sys.getenv(x))) {
     return(default)
   } else {
@@ -25,26 +30,26 @@ sys_getenv = function(x = NULL, default = "../../../data/jtn") {
 }
 
 #' @export
-duplicated_rows_ = function(df, columns) {
-	# multiple columns
-	# usage: 
-	# columns = c("window_id", "window_name")
-	# wnd %>%
-	# 	duplicated_rows_(columns)
-	.dots <- lapply(columns, as.symbol)
-	df %>%
-		dplyr::group_by_(.dots = .dots) %>%
-		dplyr::filter( n() > 1 ) %>%
-		dplyr::arrange_(.dots = .dots)
+duplicated_rows_ <- function(df, columns) {
+  # multiple columns
+  # usage: 
+  # columns = c("window_id", "window_name")
+  # wnd %>%
+  #   duplicated_rows_(columns)
+  .dots <- lapply(columns, as.symbol)
+  df %>%
+    dplyr::group_by_(.dots = .dots) %>%
+    dplyr::filter( n() > 1 ) %>%
+    dplyr::arrange_(.dots = .dots)
 }
 
 #' @export
-is_empty = function(x) {
-	if (is.data.frame(x)) return(nrow(x) == 0)
-	if (is.vector(x)) return(length(x) == 0)
-	if (is.list(x)) return(length(x) == 0)
+is_empty <- function(x) {
+  if (is.data.frame(x)) return(nrow(x) == 0)
+  if (is.vector(x)) return(length(x) == 0)
+  if (is.list(x)) return(length(x) == 0)
 
-	stop("it should be a data.frame or vector or list")
+  stop("it should be a data.frame or vector or list")
 }
 #' @export
 not_empty <- function(x) !(is_empty(x))
@@ -52,161 +57,161 @@ not_empty <- function(x) !(is_empty(x))
 # note that this has some weird bugs
 # check debug_bugs.Rmd
 #' @export
-is_na = function(x) is.na(x) | all(ifelse( class(x) == "character", x == "NA", FALSE))
+is_na <- function(x) is.na(x) | all(ifelse( class(x) == "character", x == "NA", FALSE))
 #' @export
 not.na <- function(x) !(is.na(x))
-not_na = not.na
+not_na <- not.na
 
 #' @export
-count_isna = function(x) { sum(is.na(x)) }
+count_isna <- function(x)  sum(is.na(x)) 
 #' @export
-count_unique = function(x) { length(unique(x)) }
-cu = count_unique
-ci = count_isna
+count_unique <- function(x)  length(unique(x)) 
+cu <- count_unique
+ci <- count_isna
 
 # grep variants
 #' @export
-filterm = function(x, fun) Filter(fun, x)
+filterm <- function(x, fun) Filter(fun, x)
 #' @export
-triml = function(x, ch) ltrim_char(ch, x)
+triml <- function(x, ch) ltrim_char(ch, x)
 #' @export
-trimr = function(x, ch) rtrim_char(ch, x)
+trimr <- function(x, ch) rtrim_char(ch, x)
 #' @export
-duplicatedv = function(x) x %>% duplicated %>% extractm(x)
+duplicatedv <- function(x) x %>% duplicated %>% extractm(x)
 #' @export
-reverse_args = function(fun) 
-	function(arg1, arg2, ...)
-		fun(arg2, arg1, ...)
-mag = reverse_args
-m = reverse_args
+reverse_args <- function(fun) 
+  function(arg1, arg2, ...)
+    fun(arg2, arg1, ...)
+mag <- reverse_args
+m <- reverse_args
 #' @export
-extractm = function(x, df) tidyr::extract(df, x)
+extractm <- function(x, df) tidyr::extract(df, x)
 #' @export
-partialm = function(fun, x) purrr::partial(x, fun)
+partialm <- function(fun, x) purrr::partial(x, fun)
 #' @export
-grepm = reverse_args(grep)
+grepm <- reverse_args(grep)
 #' @export
-grepv = purrr::partial(grepm, value = T)
+grepv <- purrr::partial(grepm, value = T)
 #' @export
-greplm = function(x, pattern, ...) {
-	grepl(pattern, x, ...)
+greplm <- function(x, pattern, ...) {
+  grepl(pattern, x, ...)
 }
 #' @export
-vgrep = function(x, patterns, ...) {
-	x %>% 
-		grepm( patterns %>% paste(collapse="|"), invert = T, ...) %>%
-		unique
+vgrep <- function(x, patterns, ...) {
+  x %>% 
+    grepm( patterns %>% paste(collapse="|"), invert = T, ...) %>%
+    unique
 }
 #' @export
-vgrepv = purrr::partial(vgrep, value = T)
+vgrepv <- purrr::partial(vgrep, value = T)
 #' @export
-subm = function(x, pattern, replacement, ...) {
-	sub(pattern, replacement, x, ...)
+subm <- function(x, pattern, replacement, ...) {
+  sub(pattern, replacement, x, ...)
 }
 #' @export
-gsubm = function(x, pattern, replacement, ...) {
-	gsub(pattern, replacement, x, ...)
-}
-
-#' @export
-pre0 = function(x, y) paste0(y, x)
-#' @export
-"%+%" = function(...) paste0(...,sep="")
-
-#' @export
-filter_na = function(df, column) {
-	df[is.na(df[[column]]), ]
-}
-#' @export
-filter_nonna = function(df, column) {
-	df[!is.na(df[[column]]), ]
-}
-#' @export
-all_nonna = function(v) { ci(v) == 0 }
-#' @export
-none = function(v) { !any(v) }
-#' @export
-all_unique = function(v) { duplicated(v) %>% sum == 0 }
-
-#' @export
-filter_nonna = function(df, column) {
-	df[!is.na(df[[column]]), ]
+gsubm <- function(x, pattern, replacement, ...) {
+  gsub(pattern, replacement, x, ...)
 }
 
 #' @export
-ifempty_na = function(x) {
-	if ( is_empty(x) ) {
-		return(NA)
-	} else {
-		return(x)
-	}
+pre0 <- function(x, y) paste0(y, x)
+#' @export
+"%+%" <- function(...) paste0(...,sep="")
+
+#' @export
+filter_na <- function(df, column) {
+  df[is.na(df[[column]]), ]
+}
+#' @export
+filter_nonna <- function(df, column) {
+  df[!is.na(df[[column]]), ]
+}
+#' @export
+all_nonna <- function(v) ci(v) == 0 
+#' @export
+none <- function(v) { !any(v) }
+#' @export
+all_unique <- function(v)  duplicated(v) %>% sum == 0 
+
+#' @export
+filter_nonna <- function(df, column) {
+  df[!is.na(df[[column]]), ]
 }
 
 #' @export
-unduplicate_rows = function(df, columns) {
-	# multiple columns
-	# usage: 
-	# columns = c("window_id", "window_name")
-	# wnd %>%
-	# 	unduplicate_rows(columns)
-	.dots <- lapply(columns, as.symbol)
-	df %>%
-		group_by_(.dots = .dots) %>%
-		filter( n() == 1 )
+ifempty_na <- function(x) {
+  if ( is_empty(x) ) {
+    return(NA)
+  } else {
+    return(x)
+  }
 }
 
 #' @export
-duplicated_rows_ = function(df, columns) {
-	# multiple columns
-	# usage: 
-	# columns = c("window_id", "window_name")
-	# wnd %>%
-	# 	duplicated_rows_(columns)
-	.dots <- lapply(columns, as.symbol)
-	df %>%
-		group_by_(.dots = .dots) %>%
-		filter( n() > 1 ) %>%
-		arrange_(.dots = .dots)
+unduplicate_rows <- function(df, columns) {
+  # multiple columns
+  # usage: 
+  # columns = c("window_id", "window_name")
+  # wnd %>%
+  #   unduplicate_rows(columns)
+  .dots <- lapply(columns, as.symbol)
+  df %>%
+    group_by_(.dots = .dots) %>%
+    filter( n() == 1 )
 }
 
 #' @export
-duplicated_values = function(df, column) {
-	v = filter_nonna(df, column)[[column]]
-	v[ duplicated(v) ] %>% unique
+duplicated_rows_ <- function(df, columns) {
+  # multiple columns
+  # usage: 
+  # columns = c("window_id", "window_name")
+  # wnd %>%
+  #   duplicated_rows_(columns)
+  .dots <- lapply(columns, as.symbol)
+  df %>%
+    group_by_(.dots = .dots) %>%
+    filter( n() > 1 ) %>%
+    arrange_(.dots = .dots)
 }
 
 #' @export
-duplicated_rows = function(df, column) {
-	# only for one column
-	df %>%
-		group_by_(column) %>%
-		filter( n() > 1 )
-	# if multiple columns use:
-	#dup_awdf = awdf %>%
-		#group_by(awindow_id, data_field_id) %>%
-		#filter( n() > 1 )
+duplicated_values <- function(df, column) {
+  v <- filter_nonna(df, column)[[column]]
+  v[ duplicated(v) ] %>% unique
+}
+
+#' @export
+duplicated_rows <- function(df, column) {
+  # only for one column
+  df %>%
+    group_by_(column) %>%
+    filter( n() > 1 )
+  # if multiple columns use:
+  #dup_awdf = awdf %>%
+    #group_by(awindow_id, data_field_id) %>%
+    #filter( n() > 1 )
 }
 
 # lapply rows of a dataframe
 #' @export
-applyr = purrr::partial(apply, MARGIN = 1)
+applyr <- purrr::partial(apply, MARGIN = 1)
 #' @export
-applyc = purrr::partial(apply, MARGIN = 2)
+applyc <- purrr::partial(apply, MARGIN = 2)
 
 #' @export
-import2 = function( path, table = "", with_invalid = F, ...) {
-  remove_all_na_rows = function(df) dplyr::filter( df, !applyr(is.na(df), all) )
-  remove_all_na_columns = function(df) df[ applyc(!is.na(df), any) ]
-  remove_blank_column_headings = function(df) {
+import2 <- function( path, table = "", with_invalid = F, ...) {
+  remove_all_na_rows <- function(df) dplyr::filter( df, !applyr(is.na(df), all) )
+  remove_all_na_columns <- function(df) df[ applyc(!is.na(df), any) ]
+  remove_blank_column_headings <- function(df) {
     df[ !unlist(lapply(names(df), is.blank)) ]
      #unlist(lapply(names(df), !is.blank)) 
     #lapply(names(df), is.blank)
   }
-  remove_all_newlines_inside_cells = function(df) {
+  remove_all_newlines_inside_cells <- function(df) {
     purrr::map(df, ~ stringr::str_replace_all(.x, '\\r|\\n', '') ) %>%
       tibble::as_tibble()
   }
-  escape_all_single_quotes_inside_cells = function(df) {
+  escape_all_single_quotes_inside_cells <- function(df) {
     purrr::map(df, ~ stringr::str_replace_all(.x, "'", "''") ) %>%
       tibble::as_tibble()
   }
@@ -229,50 +234,50 @@ import2 = function( path, table = "", with_invalid = F, ...) {
     substr(vars, pmax(1, length - n + 1), length) == match
   }
 
-  make_numeric = function(df) {
-    cols = names(df)
-    cols_to_select = str_ends_with(cols, '_id') | cols == 'id'
-    cols = cols[cols_to_select] 
+  make_numeric <- function(df) {
+    cols <- names(df)
+    cols_to_select <- str_ends_with(cols, '_id') | cols == 'id'
+    cols <- cols[cols_to_select]
     for (i in seq_along(cols)) {
-      df[[ cols[i] ]] = df[[ cols[i] ]] %>% as.numeric
+      df[[ cols[i] ]] <- df[[ cols[i] ]] %>% as.numeric
     }
     return(df)
   }
 
   if (is.blank(table)) {
-    df = rio::import(path, ...) 
+    df <- rio::import(path, ...)
   } else {
-    df = readxl::read_excel(path, table, ...) 
+    df <- readxl::read_excel(path, table, ...)
   }
-	# exceptional case: all columns na
-	is_any_column_exists = applyc(!is.na(df), any) %>% any
-	if(!is_any_column_exists) return(remove_all_na_rows(df))
+  # exceptional case: all columns na
+  is_any_column_exists <- applyc(!is.na(df), any) %>% any
+  if(!is_any_column_exists) return(remove_all_na_rows(df))
 
-	# normal case
-	df = df %>%
-		remove_all_na_columns %>% 
-		remove_blank_column_headings %>%
-		remove_all_na_rows %>%
-		remove_all_newlines_inside_cells %>%
-		escape_all_single_quotes_inside_cells %>%
-		make_numeric
-	if (none(names(df) == "invalid"))
-		return(df)
-	if ( with_invalid ) {
-		return(df)
-	}
-	else {
-		return( 
-			df %>%
-				dplyr::filter( is_na(invalid) | invalid == 0 ) %>%
-				dplyr::select( -invalid )
-		) 
-	}
+  # normal case
+  df <- df %>%
+    remove_all_na_columns %>% 
+    remove_blank_column_headings %>%
+    remove_all_na_rows %>%
+    remove_all_newlines_inside_cells %>%
+    escape_all_single_quotes_inside_cells %>%
+    make_numeric
+  if (none(names(df) == "invalid"))
+    return(df)
+  if ( with_invalid ) {
+    return(df)
+  }
+  else {
+    return( 
+      df %>%
+        dplyr::filter( is_na(invalid) | invalid == 0 ) %>%
+        dplyr::select( -invalid )
+    ) 
+  }
 }
 
 #' copied from rapportools
 #' @export
-tocamel = function (x, delim = "[^[:alnum:]]", upper = FALSE, sep = "", ...) {
+tocamel <- function (x, delim = "[^[:alnum:]]", upper = FALSE, sep = "", ...) {
     stopifnot(is.character(x))
     stopifnot(is.string(delim))
     s <- strsplit(x, delim, ...)
@@ -291,7 +296,7 @@ tocamel = function (x, delim = "[^[:alnum:]]", upper = FALSE, sep = "", ...) {
 }
 
 #' @export
-make_package = function() {
+make_package <- function() {
   devtools::document()
   devtools::build_vignettes()
   devtools::build()
@@ -300,31 +305,40 @@ make_package = function() {
 
 #' @export
 toUnderscore <- function(x) {
-	x %>%		
-		stringr::str_replace_all("([A-Za-z])([A-Z])([a-z])", "\\1_\\2\\3" ) %>%
-		stringr::str_replace_all("[. ]", "_") %>%
-		stringr::str_replace_all("([a-z])([A-Z])", "\\1_\\2") %>%
-		tolower()
+  x %>%    
+    stringr::str_replace_all("([A-Za-z])([A-Z])([a-z])", "\\1_\\2\\3" ) %>%
+    stringr::str_replace_all("[. ]", "_") %>%
+    stringr::str_replace_all("([a-z])([A-Z])", "\\1_\\2") %>%
+    tolower()
 }
 
 #' @export
 underscore2camel <- function(x) {
-	gsub("_(.)", "\\U\\1", x, perl = TRUE)
+  gsub("_(.)", "\\U\\1", x, perl = TRUE)
 }
 
 #' @export
-select_columns = function(df, columns) {
-	select_(df, .dots = columns)
+select_columns <- function(df, columns) {
+  select_(df, .dots = columns)
 }
 
 #' @export
-sprintf_path = function(text, data_model_dir = env_data_model_dir(), ...) {
-  file_path = sprintf(text, data_model_dir, ...)
+sprintf_path <- function(text, data_model_dir = env_data_model_dir(), ...) {
+  file_path <- sprintf(text, data_model_dir, ...)
   dir.create(dirname(file_path), recursive = T)
   return(file_path)
 }
 
-lnapply = function(X, FUN, ...) {
+lnapply <- function(X, FUN, ...) {
   lapply(names(X), FUN, X, ...) %>%
     setNames(names(X))
+}
+
+#' @export
+safe_extract <- function(l, wut) {
+  res <- l[wut] %>%
+    setNames(wut)
+  null_here <- purrr::map_lgl(res, is.null)
+  res[null_here] <- NA
+  res
 }
